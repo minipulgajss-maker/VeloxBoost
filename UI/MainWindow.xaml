@@ -66,22 +66,8 @@
 
     <Grid x:Name="Root" ClipToBounds="True">
         <!-- ═════════ Fundo com manchas de luz animadas ═════════ -->
-        <Canvas IsHitTestVisible="False">
-            <Ellipse x:Name="Blob1" Width="620" Height="620" Canvas.Left="760" Canvas.Top="-260" Opacity="0.30">
-                <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#8B5CF6" Offset="0"/><GradientStop Color="#008B5CF6" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
-                <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
-            </Ellipse>
-            <Ellipse x:Name="Blob2" Width="560" Height="560" Canvas.Left="260" Canvas.Top="460" Opacity="0.20">
-                <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#22D3EE" Offset="0"/><GradientStop Color="#0022D3EE" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
-                <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
-            </Ellipse>
-            <Ellipse x:Name="Blob3" Width="420" Height="420" Canvas.Left="1000" Canvas.Top="520" Opacity="0.16">
-                <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#EC4899" Offset="0"/><GradientStop Color="#00EC4899" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
-                <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
-            </Ellipse>
-        </Canvas>
 
-        <Border x:Name="Frame" BorderBrush="{StaticResource StrokeGrad}" BorderThickness="1">
+        <Border x:Name="Frame" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="248"/>
@@ -95,7 +81,6 @@
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,6,0,22">
                             <Grid Width="40" Height="40">
                                 <Border CornerRadius="12" Background="{StaticResource AccentGrad}">
-                                    <Border.Effect><DropShadowEffect x:Name="LogoGlow" Color="#8B5CF6" BlurRadius="18" ShadowDepth="0" Opacity="0.7"/></Border.Effect>
                                 </Border>
                                 <TextBlock Text="&#xE945;" Style="{StaticResource Icon}" FontSize="20" Foreground="White" HorizontalAlignment="Center"/>
                             </Grid>
@@ -156,18 +141,17 @@
                                 <Border CornerRadius="24" MinHeight="250" ClipToBounds="True">
                                     <Border.Background>
                                         <LinearGradientBrush x:Name="HeroBrush" StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#6D28D9" Offset="0"/>
-                                            <GradientStop Color="#4F46E5" Offset="0.45"/>
-                                            <GradientStop Color="#0891B2" Offset="1"/>
+                                            <GradientStop Color="#1A1640" Offset="0"/>
+                                            <GradientStop Color="#141836" Offset="0.5"/>
+                                            <GradientStop Color="#0F1E33" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <Border.Effect><DropShadowEffect Color="#6D28D9" BlurRadius="40" ShadowDepth="0" Opacity="0.35"/></Border.Effect>
                                     <Grid>
                                         <!-- brilho decorativo -->
-                                        <Ellipse Width="380" Height="380" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-170,-90,0" Opacity="0.25">
+                                        <Ellipse Width="380" Height="380" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-170,-90,0" Opacity="0.06">
                                             <Ellipse.Fill><RadialGradientBrush><GradientStop Color="White" Offset="0"/><GradientStop Color="#00FFFFFF" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
                                         </Ellipse>
-                                        <Border CornerRadius="24" BorderBrush="#40FFFFFF" BorderThickness="1"/>
+                                        <Border CornerRadius="24" BorderBrush="#22FFFFFF" BorderThickness="1"/>
                                         <Grid Margin="34,28">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -191,18 +175,11 @@
                                                     <Button x:Name="OptimizeBtn" Click="Optimize_Click" Cursor="Hand" HorizontalAlignment="Left">
                                                         <Button.Template>
                                                             <ControlTemplate TargetType="Button">
-                                                                <Border x:Name="B" CornerRadius="14" Background="White" Padding="26,14" RenderTransformOrigin="0.5,0.5">
+                                                                <Border x:Name="B" CornerRadius="12" Background="{StaticResource AccentGrad}" Padding="26,13" RenderTransformOrigin="0.5,0.5">
                                                                     <Border.RenderTransform><ScaleTransform x:Name="S"/></Border.RenderTransform>
-                                                                    <Border.Effect><DropShadowEffect x:Name="Glow" Color="White" BlurRadius="18" ShadowDepth="0" Opacity="0.55"/></Border.Effect>
                                                                     <ContentPresenter/>
                                                                 </Border>
                                                                 <ControlTemplate.Triggers>
-                                                                    <EventTrigger RoutedEvent="Loaded">
-                                                                        <BeginStoryboard><Storyboard>
-                                                                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="BlurRadius" From="14" To="38" Duration="0:0:1.4" AutoReverse="True" RepeatBehavior="Forever"/>
-                                                                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity" From="0.35" To="0.85" Duration="0:0:1.4" AutoReverse="True" RepeatBehavior="Forever"/>
-                                                                        </Storyboard></BeginStoryboard>
-                                                                    </EventTrigger>
                                                                     <Trigger Property="IsMouseOver" Value="True">
                                                                         <Trigger.EnterActions><BeginStoryboard><Storyboard>
                                                                             <DoubleAnimation Storyboard.TargetName="S" Storyboard.TargetProperty="ScaleX" To="1.05" Duration="0:0:0.18"/>
@@ -220,8 +197,8 @@
                                                             </ControlTemplate>
                                                         </Button.Template>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="&#xE945;" Style="{StaticResource Icon}" FontSize="16" Foreground="#6D28D9"/>
-                                                            <TextBlock x:Name="OptimizeText" Text="{ui:Tr dash.optimize}" FontSize="15" FontWeight="Bold" Margin="10,0,0,0" Foreground="#4C1D95"/>
+                                                            <TextBlock Text="&#xE945;" Style="{StaticResource Icon}" FontSize="16" Foreground="White"/>
+                                                            <TextBlock x:Name="OptimizeText" Text="{ui:Tr dash.optimize}" FontSize="14" FontWeight="SemiBold" Margin="10,0,0,0" Foreground="White"/>
                                                         </StackPanel>
                                                     </Button>
                                                     <TextBlock x:Name="ProfileDesc" Foreground="#CCFFFFFF" VerticalAlignment="Center" Margin="18,0,0,0" FontSize="12" TextWrapping="Wrap" MaxWidth="260"/>
@@ -230,15 +207,14 @@
 
                                             <!-- Anel de pontuação -->
                                             <Grid Grid.Column="1" Width="190" Height="190" Margin="20,0,0,0" VerticalAlignment="Center">
-                                                <Ellipse Stroke="#30FFFFFF" StrokeThickness="14"/>
-                                                <Path x:Name="RingPath" StrokeThickness="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                                                <Ellipse Stroke="#14FFFFFF" StrokeThickness="10"/>
+                                                <Path x:Name="RingPath" StrokeThickness="10" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
                                                     <Path.Stroke>
                                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                            <GradientStop Color="White" Offset="0"/>
-                                                            <GradientStop Color="#A5F3FC" Offset="1"/>
+                                                            <GradientStop Color="#8B5CF6" Offset="0"/>
+                                                            <GradientStop Color="#22D3EE" Offset="1"/>
                                                         </LinearGradientBrush>
                                                     </Path.Stroke>
-                                                    <Path.Effect><DropShadowEffect Color="White" BlurRadius="16" ShadowDepth="0" Opacity="0.6"/></Path.Effect>
                                                 </Path>
                                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                                     <TextBlock x:Name="ScoreText" Text="0" FontSize="46" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
@@ -336,7 +312,6 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <Grid Width="56" Height="56">
                                     <Border CornerRadius="16" Background="{StaticResource AccentGrad}">
-                                        <Border.Effect><DropShadowEffect Color="#8B5CF6" BlurRadius="22" ShadowDepth="0" Opacity="0.55"/></Border.Effect>
                                     </Border>
                                     <TextBlock x:Name="CatGlyph" Style="{StaticResource Icon}" FontSize="24" Foreground="White" HorizontalAlignment="Center"/>
                                 </Grid>
@@ -562,12 +537,6 @@
                                             <Border CornerRadius="3" Background="#1EFFFFFF"/>
                                             <Border x:Name="UpdFill" CornerRadius="3" Background="{StaticResource AccentGrad3}" HorizontalAlignment="Left" Width="0"/>
                                         </Grid>
-                                        <TextBlock Text="{ui:Tr set.upd.source}" Style="{StaticResource Caps}" Margin="0,18,0,6"/>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <TextBox x:Name="UpdateSourceBox" Style="{StaticResource InputBox}" FontFamily="Cascadia Mono, Consolas" FontSize="12"/>
-                                            <Button Grid.Column="1" Style="{StaticResource GhostBtn}" Margin="8,0,0,0" Click="SaveSource_Click" Content="OK"/>
-                                        </Grid>
                                     </StackPanel>
                                 </Border>
 
@@ -588,7 +557,6 @@
         <Border x:Name="Toast" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,28" CornerRadius="14"
                 Background="#F2171C3D" BorderBrush="{StaticResource HoverStroke}" BorderThickness="1" Padding="18,12" Opacity="0" IsHitTestVisible="False" MaxWidth="460">
             <Border.RenderTransform><TranslateTransform x:Name="ToastShift" Y="30"/></Border.RenderTransform>
-            <Border.Effect><DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.5" Color="#000000"/></Border.Effect>
             <StackPanel Orientation="Horizontal">
                 <Grid Width="26" Height="26" Margin="0,0,12,0" VerticalAlignment="Center">
                     <Ellipse Fill="{StaticResource AccentGrad}"/>

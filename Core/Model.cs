@@ -251,7 +251,7 @@ namespace VeloxBoost.Core
         public override long Apply()
         {
             var r = Sys.Run(_exe, _apply);
-            if (r.Code != 0) throw new Exception(Sys.Trim(r.Output));
+            if (r.Code != 0 && !Regex.IsMatch(r.Output ?? "", @"\bOK\b|restart|reiniciar", RegexOptions.IgnoreCase)) throw new Exception(Sys.Trim(r.Output));
             if (_revert != null) BackupStore.Set(Key, new BackupEntry { Existed = true });
             return 0;
         }
@@ -272,7 +272,7 @@ namespace VeloxBoost.Core
 
         (int ac, int dc)? Query()
         {
-            var r = Sys.Run("powercfg.exe", $"/q SCHEME_CURRENT {_sub} {_setting}");
+            var r = Sys.Run("powercfg.exe", $"/q SCHEME_CURRENT {_sub} {_setting}", 6000);
             if (r.Code != 0) return null;
             var m = Regex.Matches(r.Output, @"0x([0-9a-fA-F]{8})");
             if (m.Count < 2) return null;
@@ -481,10 +481,11 @@ namespace VeloxBoost.Core
                 var psi = new ProcessStartInfo(path, args)
                 {
                     UseShellExecute = false, CreateNoWindow = true,
-                    RedirectStandardOutput = true, RedirectStandardError = true,
+                    RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true,
                     StandardOutputEncoding = System.Text.Encoding.UTF8
                 };
                 using var p = Process.Start(psi);
+                try { p.StandardInput.Close(); } catch { }
                 var o = p.StandardOutput.ReadToEndAsync();
                 var e = p.StandardError.ReadToEndAsync();
                 if (!p.WaitForExit(timeoutMs)) { try { p.Kill(true); } catch { } return (-1, "timeout"); }

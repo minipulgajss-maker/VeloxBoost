@@ -20,7 +20,7 @@ namespace VeloxBoost.Core
     public sealed class AppSettings
     {
         public string Language { get; set; } = "en";
-        public int SettingsVersion { get; set; } = 2;
+        public int SettingsVersion { get; set; } = 3;
         public int Profile { get; set; } = 1;
         public bool StartWithWindows { get; set; } = false;
         public bool ReapplyOnStartup { get; set; } = false;
@@ -45,7 +45,7 @@ namespace VeloxBoost.Core
             catch (Exception ex) { Sys.Log("settings load: " + ex.Message); Current = new(); }
             Current.Games ??= GameBooster.DefaultGames.ToList();
             Current.AppliedIds ??= new();
-            if (Current.SettingsVersion < 2) { Current.Language = "en"; Current.SettingsVersion = 2; Save(); }
+            if (Current.SettingsVersion < 3) { Current.Language = "en"; Current.SettingsVersion = 3; Save(); }
             if (string.IsNullOrWhiteSpace(Current.UpdateSource) || Current.UpdateSource.Contains("O-TEU-UTILIZADOR"))
                 Current.UpdateSource = new AppSettings().UpdateSource;
         }
@@ -395,13 +395,8 @@ namespace VeloxBoost.Core
         static UpdateManager Mgr()
         {
             if (_mgr != null) return _mgr;
-            string src = Settings.Current.UpdateSource?.Trim() ?? "";
-            IUpdateSource source = src.Contains("github.com", StringComparison.OrdinalIgnoreCase)
-                ? new GithubSource(src, null, false)
-                : new SimpleWebSource(src);
-            if (!src.StartsWith("http", StringComparison.OrdinalIgnoreCase) && Directory.Exists(src))
-                source = new SimpleFileSource(new DirectoryInfo(src));
-            _mgr = new UpdateManager(source);
+            const string src = "https://github.com/minipulgajss-maker/VeloxBoost";
+            _mgr = new UpdateManager(new GithubSource(src, null, false));
             return _mgr;
         }
 

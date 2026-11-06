@@ -34,7 +34,7 @@ namespace VeloxBoost
                 Settings.Load(); L.I.SetLang(args.Length > snap + 2 ? args[snap + 2] : Settings.Current.Language); Catalog.Build();
                 var sapp = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                 var w = new UI.MainWindow(false, snapshotMode: true);
-                w.Loaded += async (_, _) => { await w.SnapshotAsync(args[snap + 1]); sapp.Shutdown(); };
+                sapp.Dispatcher.BeginInvoke(async () => { try { await w.SnapshotAsync(args[snap + 1]); } catch (Exception ex) { Sys.Log("snap: " + ex); } sapp.Shutdown(); });
                 sapp.Run();
                 return;
             }
@@ -70,6 +70,8 @@ namespace VeloxBoost
             app.DispatcherUnhandledException += (s, e) => { Sys.Log("UI: " + e.Exception); e.Handled = true; };
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Sys.Log("FATAL: " + e.ExceptionObject);
             System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (s, e) => { Sys.Log("Task: " + e.Exception); e.SetObserved(); };
+
+            if (!UI.UpdateGate.Run()) return;
 
             var win = new UI.MainWindow(args.Contains("--minimized"));
             app.Run();

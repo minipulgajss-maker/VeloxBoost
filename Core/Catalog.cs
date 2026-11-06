@@ -14,7 +14,7 @@ namespace VeloxBoost.Core
     {
         public static readonly List<Tweak> All = new();
         public static readonly string[] Categories =
-            { "gaming", "games", "network", "privacy", "performance", "interface", "ads", "power", "services", "tasks", "apps", "cleanup" };
+            { "gaming", "network", "privacy", "performance", "interface", "ads", "power", "services", "tasks", "apps", "cleanup" };
 
         public static readonly Dictionary<string, string> Glyphs = new()
         {
@@ -53,7 +53,7 @@ namespace VeloxBoost.Core
         public static void Build()
         {
             if (All.Count > 0) return;
-            Gaming(); Games(); Extras(); Network(); Privacy(); Performance(); Interface(); Ads(); Power(); Services(); Tasks(); Apps(); Cleanup();
+            Gaming(); Extras(); Network(); Privacy(); Performance(); Interface(); Ads(); Power(); Services(); Tasks(); Apps(); Cleanup();
         }
 
         // ═════════════════════════ JOGOS & FPS ═════════════════════════

@@ -1,18 +1,19 @@
 name: Release
 
-# Create a new version: git tag v1.0.1 && git push origin v1.0.1
-# GitHub builds the app, creates Setup.exe and publishes the release. Installed apps update themselves.
+# Every push to main builds and publishes a new version automatically.
+# Installed apps show "Update required" on next launch.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths-ignore: ['README.md', '.gitignore']
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version (e.g. 1.0.1)'
-        required: true
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -26,10 +27,7 @@ jobs:
 
       - name: Version
         shell: bash
-        run: |
-          V="${{ github.event.inputs.version }}"
-          if [ -z "$V" ]; then V="${GITHUB_REF_NAME#v}"; fi
-          echo "VERSION=$V" >> $GITHUB_ENV
+        run: echo "VERSION=1.2.${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Publish
         run: dotnet publish VeloxBoost.csproj -c Release -r win-x64 --self-contained -o publish -p:Version=${{ env.VERSION }}

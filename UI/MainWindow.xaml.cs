@@ -77,7 +77,7 @@ namespace VeloxBoost.UI
             (Settings.Current.Profile switch { 0 => ProfSafe, 2 => ProfExt, _ => ProfBal }).IsChecked = true;
             BoostAuto.IsChecked = Settings.Current.BoosterEnabled;
             BoostBg.IsChecked = Settings.Current.BoosterThrottleBackground;
-            UpdateSourceBox.Text = Settings.Current.UpdateSource;
+
             BackupPath.Text = Sys.DataDir;
 
             L.I.LanguageChanged += OnLanguageChanged;
@@ -117,7 +117,7 @@ namespace VeloxBoost.UI
                 await RefreshStatesAsync(Catalog.All.Where(t => Settings.Current.AppliedIds.Contains(t.Id)));
             }
 
-            if (Settings.Current.CheckUpdates && !_snapshot) await CheckUpdatesAsync(silent: true);
+            if (!_snapshot) await CheckUpdatesAsync(silent: true);
         }
 
         async Task RefreshStatesAsync(IEnumerable<Tweak> tweaks)
@@ -126,6 +126,7 @@ namespace VeloxBoost.UI
             await Task.Run(() => Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 6 }, StateCache.Update));
             var ids = new HashSet<string>(list.Select(t => t.Id));
             foreach (var vm in _vms.Values.SelectMany(v => v)) if (ids.Contains(vm.T.Id)) vm.Sync();
+            if (PageTweaks.Visibility == Visibility.Visible) ApplyFilter();
             RefreshCounts();
         }
 
@@ -200,8 +201,10 @@ namespace VeloxBoost.UI
             }
             if (page == "backup") BackupCount.Text = L.F("bk.entries", BackupStore.Count);
             SelectNav(page == "tweaks" ? "cat:" + cat : page);
+            RefreshCounts();
 
             target.Visibility = Visibility.Visible;
+            if (_snapshot) { target.BeginAnimation(OpacityProperty, null); target.Opacity = 1; target.RenderTransform = null; return; }
             var tt = new TranslateTransform(0, 16);
             target.RenderTransform = tt;
             var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
@@ -227,10 +230,10 @@ namespace VeloxBoost.UI
         {
             if (_cat == null) return;
             string q = SearchBox.Text?.Trim() ?? "";
-            IEnumerable<TweakVM> items = _vms[_cat];
+            IEnumerable<TweakVM> items = _vms[_cat].Where(v => v.Applicable);
             if (q.Length > 0)
                 items = Catalog.All.Where(t => t.NamePt.Contains(q, StringComparison.OrdinalIgnoreCase) || t.NameEn.Contains(q, StringComparison.OrdinalIgnoreCase) || t.Details.Contains(q, StringComparison.OrdinalIgnoreCase))
-                    .Select(t => _vms[t.Category].First(v => v.T == t));
+                    .Select(t => _vms[t.Category].First(v => v.T == t)).Where(v => v.Applicable && _vms.ContainsKey(v.T.Category));
             TweakList.ItemsSource = items.ToList();
         }
 
@@ -589,8 +592,7 @@ namespace VeloxBoost.UI
             AddSettingRow("set.startup", "set.startup.d", () => Settings.Current.StartWithWindows, v => { Settings.Current.StartWithWindows = v; Engine.SetStartup(v); });
             AddSettingRow("set.reapply", "set.reapply.d", () => Settings.Current.ReapplyOnStartup, v => Settings.Current.ReapplyOnStartup = v);
             AddSettingRow("set.restorepoint", "set.restorepoint.d", () => Settings.Current.RestorePointFirst, v => Settings.Current.RestorePointFirst = v);
-            AddSettingRow("set.tray", "set.tray.d", () => Settings.Current.CloseToTray, v => Settings.Current.CloseToTray = v);
-            AddSettingRow("set.updates", "set.updates.d", () => Settings.Current.CheckUpdates, v => Settings.Current.CheckUpdates = v, last: true);
+            AddSettingRow("set.tray", "set.tray.d", () => Settings.Current.CloseToTray, v => Settings.Current.CloseToTray = v, last: true);
         }
 
         void AddSettingRow(string titleKey, string descKey, Func<bool> get, Action<bool> set, bool last = false)
@@ -694,14 +696,6 @@ namespace VeloxBoost.UI
             }
         }
 
-        void SaveSource_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.Current.UpdateSource = UpdateSourceBox.Text.Trim();
-            Settings.Save();
-            Updater.ResetSource();
-            _ = CheckUpdatesAsync(false);
-        }
-
         void UpdateBadge_Click(object sender, MouseButtonEventArgs e) => SelectNav("settings");
 
         // ═════════════════════════ Estatísticas ao vivo ═════════════════════════
@@ -761,16 +755,9 @@ namespace VeloxBoost.UI
                 tt.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(0, dx, TimeSpan.FromSeconds(secs)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = ease });
                 tt.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, dy, TimeSpan.FromSeconds(secs * 1.3)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = ease });
             }
-            Drift(Blob1, -180, 120, 11);
-            Drift(Blob2, 220, -140, 13);
-            Drift(Blob3, -160, -180, 15);
 
             var e2 = new SineEase { EasingMode = EasingMode.EaseInOut };
-            HeroBrush.BeginAnimation(LinearGradientBrush.StartPointProperty, new PointAnimation(new Point(0, 0), new Point(1, 0), TimeSpan.FromSeconds(7)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = e2 });
-            HeroBrush.BeginAnimation(LinearGradientBrush.EndPointProperty, new PointAnimation(new Point(1, 1), new Point(0, 1), TimeSpan.FromSeconds(7)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = e2 });
 
-            LogoGlow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.BlurRadiusProperty,
-                new DoubleAnimation(10, 26, TimeSpan.FromSeconds(1.8)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = e2 });
 
             var st = (ScaleTransform)PulseRing.RenderTransform;
             st.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.6, 1.8, TimeSpan.FromSeconds(1.6)) { RepeatBehavior = RepeatBehavior.Forever });
@@ -840,7 +827,7 @@ namespace VeloxBoost.UI
         {
             System.IO.Directory.CreateDirectory(folder);
             await Task.Delay(400);
-            while (!_statesReady) await Task.Delay(200);
+            for (int i = 0; i < 100 && !_statesReady; i++) await Task.Delay(200);
             var pages = new (string nav, string file)[] { ("dashboard", "1-dashboard"), ("cat:gaming", "2-gaming"), ("cat:network", "3-network"), ("cat:cleanup", "4-cleanup"), ("booster", "5-booster"), ("backup", "6-backup"), ("settings", "7-settings") };
             foreach (var (nav, file) in pages)
             {
@@ -854,9 +841,9 @@ namespace VeloxBoost.UI
                 using (var dc = dv.RenderOpen())
                 {
                     dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x0A, 0x0C, 0x16)), null, new Rect(0, 0, Root.ActualWidth, Root.ActualHeight));
-                    dc.DrawRectangle(new VisualBrush(Root), null, new Rect(0, 0, Root.ActualWidth, Root.ActualHeight));
+
                 }
-                rtb.Render(dv);
+                rtb.Render(dv); rtb.Render(Root);
                 var enc = new PngBitmapEncoder();
                 enc.Frames.Add(BitmapFrame.Create(rtb));
                 using var fs = System.IO.File.Create(System.IO.Path.Combine(folder, file + ".png"));

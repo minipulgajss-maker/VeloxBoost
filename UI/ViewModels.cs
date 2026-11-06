@@ -39,6 +39,7 @@ namespace VeloxBoost.UI
         public static void Update(Tweak t)
         {
             bool ap = false, on = false;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try { ap = t.Applicable; on = ap && t.IsApplied(); } catch { }
             S[t.Id] = (ap, on);
         }
