@@ -1,0 +1,48 @@
+name: Release
+
+# Cria uma nova versão: git tag v1.0.1 && git push origin v1.0.1
+# O GitHub compila, gera o Setup.exe e publica a release. As apps instaladas atualizam-se sozinhas.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão (ex.: 1.0.1)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Versão
+        shell: bash
+        run: |
+          V="${{ github.event.inputs.version }}"
+          if [ -z "$V" ]; then V="${GITHUB_REF_NAME#v}"; fi
+          echo "VERSION=$V" >> $GITHUB_ENV
+
+      - name: Publicar
+        run: dotnet publish VeloxBoost.csproj -c Release -r win-x64 --self-contained -o publish -p:Version=${{ env.VERSION }}
+
+      - name: Instalar vpk (Velopack)
+        run: dotnet tool install -g vpk
+
+      - name: Transferir release anterior (para atualizações delta)
+        run: vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Empacotar
+        run: vpk pack -u VeloxBoost -v ${{ env.VERSION }} -p publish -e VeloxBoost.exe --packTitle VeloxBoost --packAuthors VeloxBoost --icon Assets/icon.ico
+
+      - name: Publicar release no GitHub
+        run: vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish --releaseName "VeloxBoost ${{ env.VERSION }}" --tag v${{ env.VERSION }} --token ${{ secrets.GITHUB_TOKEN }}
