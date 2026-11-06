@@ -19,7 +19,8 @@ namespace VeloxBoost.Core
     // ───────────────────────── Definições ─────────────────────────
     public sealed class AppSettings
     {
-        public string Language { get; set; } = "pt";
+        public string Language { get; set; } = "en";
+        public int SettingsVersion { get; set; } = 2;
         public int Profile { get; set; } = 1;
         public bool StartWithWindows { get; set; } = false;
         public bool ReapplyOnStartup { get; set; } = false;
@@ -44,6 +45,7 @@ namespace VeloxBoost.Core
             catch (Exception ex) { Sys.Log("settings load: " + ex.Message); Current = new(); }
             Current.Games ??= GameBooster.DefaultGames.ToList();
             Current.AppliedIds ??= new();
+            if (Current.SettingsVersion < 2) { Current.Language = "en"; Current.SettingsVersion = 2; Save(); }
             if (string.IsNullOrWhiteSpace(Current.UpdateSource) || Current.UpdateSource.Contains("O-TEU-UTILIZADOR"))
                 Current.UpdateSource = new AppSettings().UpdateSource;
         }

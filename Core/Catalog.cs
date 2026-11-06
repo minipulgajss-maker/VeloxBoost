@@ -14,13 +14,14 @@ namespace VeloxBoost.Core
     {
         public static readonly List<Tweak> All = new();
         public static readonly string[] Categories =
-            { "gaming", "network", "privacy", "performance", "interface", "ads", "power", "services", "tasks", "apps", "cleanup" };
+            { "gaming", "games", "network", "privacy", "performance", "interface", "ads", "power", "services", "tasks", "apps", "cleanup" };
 
         public static readonly Dictionary<string, string> Glyphs = new()
         {
             ["gaming"] = "", ["network"] = "", ["privacy"] = "", ["performance"] = "",
             ["interface"] = "", ["ads"] = "", ["power"] = "", ["services"] = "",
             ["tasks"] = "", ["apps"] = "", ["cleanup"] = ""
+            ,["games"] = "\uE7B3"
         };
 
         const string LM = "HKLM", CU = "HKCU";
@@ -52,7 +53,7 @@ namespace VeloxBoost.Core
         public static void Build()
         {
             if (All.Count > 0) return;
-            Gaming(); Network(); Privacy(); Performance(); Interface(); Ads(); Power(); Services(); Tasks(); Apps(); Cleanup();
+            Gaming(); Games(); Extras(); Network(); Privacy(); Performance(); Interface(); Ads(); Power(); Services(); Tasks(); Apps(); Cleanup();
         }
 
         // ═════════════════════════ JOGOS & FPS ═════════════════════════
@@ -592,6 +593,92 @@ namespace VeloxBoost.Core
             Cl("Cache da Otimização de Entrega", "Delivery Optimization cache", Risk.Moderate,
                 new CleanAction(@"%WINDIR%\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache"));
             Cl("Ficheiros de pré-carregamento antigos", "Old prefetch files", Risk.Advanced, new CleanAction(@"%WINDIR%\Prefetch", "*.pf"));
+        }
+
+        // ═════════════════════════ PER-GAME ═════════════════════════
+        const string IFEO = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\";
+        const string GpuPref = @"Software\Microsoft\DirectX\UserGpuPreferences";
+        const string Layers = @"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers";
+
+        static string Newest(string root, string pattern, string exe)
+        {
+            root = Environment.ExpandEnvironmentVariables(root);
+            if (!System.IO.Directory.Exists(root)) return null;
+            return System.IO.Directory.GetDirectories(root, pattern).OrderByDescending(d => d)
+                .Select(d => System.IO.Path.Combine(d, exe)).FirstOrDefault(System.IO.File.Exists);
+        }
+
+        static void Games()
+        {
+            _cat = "games";
+            var games = new (string name, string exe, Func<string> find)[]
+            {
+                ("CS2", "cs2.exe", () => GameLocator.Steam(@"Counter-Strike Global Offensive\game\bin\win64\cs2.exe")),
+                ("Valorant", "VALORANT-Win64-Shipping.exe", () => GameLocator.AnyDrive(@"Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe")),
+                ("League of Legends", "League of Legends.exe", () => GameLocator.AnyDrive(@"Riot Games\League of Legends\Game\League of Legends.exe")),
+                ("Fortnite", "FortniteClient-Win64-Shipping.exe", () => GameLocator.Epic("Fortnite", "FortniteClient-Win64-Shipping.exe")
+                    ?? GameLocator.AnyDrive(@"Program Files\Epic Games\Fortnite\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe")),
+                ("Apex Legends", "r5apex.exe", () => GameLocator.Steam(@"Apex Legends\r5apex.exe")),
+                ("Rocket League", "RocketLeague.exe", () => GameLocator.Epic("Rocket League", "RocketLeague.exe") ?? GameLocator.Steam(@"rocketleague\Binaries\Win64\RocketLeague.exe")),
+                ("Dota 2", "dota2.exe", () => GameLocator.Steam(@"dota 2 beta\game\bin\win64\dota2.exe")),
+                ("Rust", "RustClient.exe", () => GameLocator.Steam(@"Rust\RustClient.exe")),
+                ("PUBG", "TslGame.exe", () => GameLocator.Steam(@"PUBG\TslGame\Binaries\Win64\TslGame.exe")),
+                ("Rainbow Six Siege", "RainbowSix.exe", () => GameLocator.Steam(@"Tom Clancy's Rainbow Six Siege\RainbowSix.exe")),
+                ("GTA V", "GTA5.exe", () => GameLocator.Steam(@"Grand Theft Auto V\GTA5.exe") ?? GameLocator.Epic("Grand Theft Auto V", "GTA5.exe")),
+                ("Overwatch 2", "Overwatch.exe", () => GameLocator.Steam(@"Overwatch\Overwatch.exe") ?? GameLocator.AnyDrive(@"Program Files (x86)\Overwatch\_retail_\Overwatch.exe")),
+                ("Marvel Rivals", "Marvel-Win64-Shipping.exe", () => GameLocator.Steam(@"MarvelRivals\MarvelGame\Marvel\Binaries\Win64\Marvel-Win64-Shipping.exe")),
+                ("Roblox", "RobloxPlayerBeta.exe", () => Newest(@"%LOCALAPPDATA%\Roblox\Versions", "version-*", "RobloxPlayerBeta.exe")),
+            };
+            foreach (var g in games)
+            {
+                var find = g.find; string exe = g.exe;
+                T($"{g.name}: prioridade de CPU alta", $"{g.name}: high CPU priority", Risk.Moderate,
+                    new GamePathAction(find, _ => new RegAction(LM, IFEO + exe + @"\PerfOptions", "CpuPriorityClass", () => 3)));
+                T($"{g.name}: usar a GPU de alto desempenho", $"{g.name}: use high-performance GPU", Risk.Safe,
+                    new GamePathAction(find, p => new RegAction(CU, GpuPref, p, () => "GpuPreference=2;")));
+                T($"{g.name}: desativar otimizações de ecrã inteiro", $"{g.name}: disable fullscreen optimizations", Risk.Moderate,
+                    new GamePathAction(find, p => new RegAction(CU, Layers, p, () => "~ DISABLEDXMAXIMIZEDWINDOWEDMODE")));
+            }
+
+            Func<string> discord = () => Newest(@"%LOCALAPPDATA%\Discord", "app-*", "Discord.exe");
+            T("Discord: prioridade abaixo do normal (mais FPS)", "Discord: below-normal priority (more FPS)", Risk.Moderate,
+                new GamePathAction(discord, _ => new RegAction(LM, IFEO + @"Discord.exe\PerfOptions", "CpuPriorityClass", () => 5)));
+            T("Discord: usar GPU de poupança de energia", "Discord: use power-saving GPU", Risk.Safe,
+                new GamePathAction(discord, p => new RegAction(CU, GpuPref, p, () => "GpuPreference=1;")));
+            T("Discord: não iniciar com o Windows", "Discord: don't start with Windows", Risk.Safe,
+                new GamePathAction(discord, _ => new RegAction(CU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Discord",
+                    () => new byte[] { 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })));
+            Func<string> steamWeb = () => GameLocator.SteamLibraries().Select(l => System.IO.Path.Combine(l, @"bin\cef\cef.win7x64\steamwebhelper.exe")).FirstOrDefault(System.IO.File.Exists);
+            T("Steam: navegador interno com prioridade baixa", "Steam: low priority web helper", Risk.Moderate,
+                new GamePathAction(steamWeb, _ => new RegAction(LM, IFEO + @"steamwebhelper.exe\PerfOptions", "CpuPriorityClass", () => 5)));
+            T("Steam: navegador interno usa GPU de poupança", "Steam: web helper uses power-saving GPU", Risk.Safe,
+                new GamePathAction(steamWeb, p => new RegAction(CU, GpuPref, p, () => "GpuPreference=1;")));
+            Func<string> obs = () => GameLocator.AnyDrive(@"Program Files\obs-studio\bin\64bit\obs64.exe");
+            T("OBS: prioridade acima do normal", "OBS: above-normal priority (no dropped frames)", Risk.Safe,
+                new GamePathAction(obs, _ => new RegAction(LM, IFEO + @"obs64.exe\PerfOptions", "CpuPriorityClass", () => 6)));
+        }
+
+        // ═════════════════════════ EXTRA (v1.1) ═════════════════════════
+        static void Extras()
+        {
+            _cat = "network";
+            T("Pacing TCP desligado", "TCP pacing off", Risk.Safe, C("netsh.exe", "int tcp set global pacingprofile=off", "int tcp set global pacingprofile=default"));
+            T("Menos tentativas SYN", "Fewer SYN retries (faster failed connects)", Risk.Safe, C("netsh.exe", "int tcp set global maxsynretransmissions=2", "int tcp set global maxsynretransmissions=4"));
+            T("Desativar resiliência RTT sem SACK", "Disable non-SACK RTT resiliency", Risk.Safe, C("netsh.exe", "int tcp set global nonsackrttresiliency=disabled", "int tcp set global nonsackrttresiliency=disabled"));
+            _cat = "privacy";
+            T("Desativar câmara no ecrã de bloqueio", "Disable lock screen camera", Risk.Safe, R(LM, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreenCamera", 1));
+            T("Desativar Windows Ink Workspace", "Disable Windows Ink Workspace", Risk.Safe, R(LM, @"SOFTWARE\Policies\Microsoft\WindowsInkWorkspace", "AllowWindowsInkWorkspace", 0));
+            _cat = "apps";
+            T("Edge: sem atalho no ambiente de trabalho", "Edge: no desktop shortcut on update", Risk.Safe, R(LM, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault", 0));
+            _cat = "interface";
+            T("Mostrar Este PC no ambiente de trabalho", "Show This PC on desktop", Risk.Safe, R(CU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", "{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 0));
+            T("Esconder ícone Saber mais sobre esta imagem", "Hide Learn about this picture icon", Risk.Safe, R(CU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}", 1));
+            T("Sem sugestões do Snap Assist", "No Snap Assist suggestions", Risk.Safe, R(CU, Adv, "SnapAssist", 0));
+            _cat = "cleanup";
+            var t = T("Cache do Microsoft Teams", "Microsoft Teams cache", Risk.Safe, new CleanAction(@"%APPDATA%\Microsoft\Teams\Cache"), new CleanAction(@"%APPDATA%\Microsoft\Teams\Service Worker\CacheStorage")); t.IsAction = true;
+            t = T("Lista de ficheiros recentes", "Recent files list", Risk.Safe, new CleanAction(@"%APPDATA%\Microsoft\Windows\Recent", "*.lnk")); t.IsAction = true;
+            t = T("Cache do Roblox", "Roblox cache", Risk.Safe, new CleanAction(@"%TEMP%\Roblox")); t.IsAction = true;
+            t = T("Registos do Discord", "Discord logs", Risk.Safe, new CleanAction(@"%APPDATA%\discord\logs")); t.IsAction = true;
         }
 
         public static IEnumerable<Tweak> ForProfile(int profile) =>

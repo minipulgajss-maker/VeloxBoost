@@ -13,14 +13,14 @@ namespace VeloxBoost.Core
 
         public static readonly (string Code, string Name)[] Languages =
         {
-            ("pt", "Português"), ("en", "English"), ("es", "Español"), ("fr", "Français")
+            ("en", "English"), ("pt", "Português"), ("es", "Español"), ("fr", "Français")
         };
 
-        public string Lang { get; private set; } = "pt";
+        public string Lang { get; private set; } = "en";
 
         public void SetLang(string code)
         {
-            if (string.IsNullOrEmpty(code) || !Data.ContainsKey(code)) code = "pt";
+            if (string.IsNullOrEmpty(code) || !Data.ContainsKey(code)) code = "en";
             Lang = code;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
             LanguageChanged?.Invoke();
@@ -65,6 +65,9 @@ namespace VeloxBoost.Core
                 ["cat.tasks"] = "Tarefas Agendadas",
                 ["cat.apps"] = "Apps & Browsers",
                 ["cat.cleanup"] = "Limpeza",
+                ["cat.games"] = "Por Jogo",
+                ["catd.games"] = "Otimizações específicas para CS2, Valorant, Fortnite, Discord e mais.",
+                ["dash.loaded"] = "otimizações carregadas",
 
                 ["catd.gaming"] = "Mais FPS, menos input lag e prioridade máxima para jogos.",
                 ["catd.network"] = "Ping mais baixo, Wi-Fi mais estável e TCP afinado.",
@@ -205,6 +208,9 @@ namespace VeloxBoost.Core
                 ["cat.tasks"] = "Scheduled Tasks",
                 ["cat.apps"] = "Apps & Browsers",
                 ["cat.cleanup"] = "Cleanup",
+                ["cat.games"] = "Per-Game",
+                ["catd.games"] = "Tuned settings for CS2, Valorant, Fortnite, Discord and more.",
+                ["dash.loaded"] = "optimizations loaded",
 
                 ["catd.gaming"] = "More FPS, less input lag and top priority for games.",
                 ["catd.network"] = "Lower ping, steadier Wi-Fi and a tuned TCP stack.",
@@ -344,6 +350,9 @@ namespace VeloxBoost.Core
                 ["cat.tasks"] = "Tareas Programadas",
                 ["cat.apps"] = "Apps y Navegadores",
                 ["cat.cleanup"] = "Limpieza",
+                ["cat.games"] = "Por Juego",
+                ["catd.games"] = "Ajustes para CS2, Valorant, Fortnite, Discord y más.",
+                ["dash.loaded"] = "optimizaciones cargadas",
                 ["catd.gaming"] = "Más FPS, menos input lag y prioridad máxima para juegos.",
                 ["catd.network"] = "Ping más bajo, Wi-Fi más estable y TCP ajustado.",
                 ["catd.privacy"] = "Corta la telemetría, el rastreo y la recogida de datos.",
@@ -473,6 +482,9 @@ namespace VeloxBoost.Core
                 ["cat.tasks"] = "Tâches planifiées",
                 ["cat.apps"] = "Apps & Navigateurs",
                 ["cat.cleanup"] = "Nettoyage",
+                ["cat.games"] = "Par Jeu",
+                ["catd.games"] = "Réglages pour CS2, Valorant, Fortnite, Discord et plus.",
+                ["dash.loaded"] = "optimisations chargées",
                 ["catd.gaming"] = "Plus de FPS, moins de latence, priorité aux jeux.",
                 ["catd.network"] = "Ping plus bas, Wi-Fi plus stable, TCP optimisé.",
                 ["catd.privacy"] = "Coupe la télémétrie, le pistage et la collecte.",

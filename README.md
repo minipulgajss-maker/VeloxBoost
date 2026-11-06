@@ -1,16 +1,24 @@
 # VeloxBoost
 
-Otimizador automático para Windows 10/11 — 381 otimizações reversíveis em 11 categorias (Jogos & FPS, Rede & Ping, Privacidade, Desempenho, Interface, Anúncios, Energia, Serviços, Tarefas, Apps, Limpeza), Game Booster com prioridade automática, teste de DNS, pontos de restauro, 4 línguas e atualizações automáticas como o Discord.
+Automatic PC optimizer for Windows 10/11.
 
-## Instalar
-Transfere o `VeloxBoost-win-Setup.exe` da última [release](https://github.com/minipulgajss-maker/VeloxBoost/releases/latest).
+- **442 reversible optimizations** across 12 categories: Gaming & FPS, Per-Game, Network & Ping, Privacy, Performance, Interface, Ads & Suggestions, Power, Services, Scheduled Tasks, Apps & Browsers, Cleanup
+- **Per-game tuning** for CS2, Valorant, Fortnite, League of Legends, Apex, Rocket League, Dota 2, Rust, PUBG, Rainbow Six Siege, GTA V, Overwatch 2, Marvel Rivals, Roblox, plus Discord, Steam and OBS
+- **Game Booster**: automatic high CPU priority for games and background app throttling
+- **Network tools**: real DNS speed test and one-click fastest DNS
+- Safe / Balanced / Extreme profiles, restore point before optimizing, full backup and revert
+- English, Português, Español, Français
+- **Automatic updates** (like Discord) powered by Velopack
 
-## Publicar uma nova versão
+## Install
+Download `VeloxBoost-win-Setup.exe` from the [latest release](https://github.com/minipulgajss-maker/VeloxBoost/releases/latest).
+
+## Release a new version
 ```
-git tag v1.0.1
-git push origin v1.0.1
+git tag v1.2.0
+git push origin v1.2.0
 ```
-O GitHub Actions compila, cria o instalador e publica a release. Todas as apps instaladas transferem a atualização em segundo plano e instalam-na ao reiniciar.
+GitHub Actions builds the app, creates the installer and publishes the release. Installed copies download the update in the background and install it on restart.
 
-## Segurança
-Cada alteração guarda o valor original (`%LOCALAPPDATA%\VeloxBoostData\backup.json`) e pode ser revertida. Defender, UAC, Firewall, SmartScreen e Windows Update nunca são desligados.
+## Safety
+Every change stores the original value (`%LOCALAPPDATA%\VeloxBoostData\backup.json`) and can be reverted. Defender, UAC, Firewall, SmartScreen and Windows Update are never turned off.

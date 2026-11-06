@@ -98,7 +98,7 @@ namespace VeloxBoost.UI
             if (!_snapshot) ListenForShowRequests();
             StartAmbientAnimations();
             ShowPage("dashboard");
-            AddLog($"VeloxBoost {Updater.CurrentVersion} — {Catalog.All.Count} " + (L.I.Lang == "pt" ? "otimizações carregadas" : "optimizations loaded"), DotInfo);
+            AddLog($"VeloxBoost {Updater.CurrentVersion} — {Catalog.All.Count} " + L.T("dash.loaded"), DotInfo);
 
             if (!startMinimized) Show();
             _ = InitAsync();
@@ -845,7 +845,7 @@ namespace VeloxBoost.UI
             foreach (var (nav, file) in pages)
             {
                 SelectNav(nav);
-                if (nav == "dashboard") ShowToast("Concluído: 214 aplicadas, 0 falharam, 1834 MB libertados.");
+                if (nav == "dashboard") ShowToast("Done: 214 applied, 0 failed, 1834 MB freed.");
                 await Task.Delay(1600);
                 Root.UpdateLayout();
                 var dpi = VisualTreeHelper.GetDpi(this);
